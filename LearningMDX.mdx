@@ -1,0 +1,512 @@
+// First SELECT, everything, default measure
+SELECT 
+FROM [Analysis Services Tutorial]
+
+// First WHERE = slicer
+SELECT 
+FROM [Analysis Services Tutorial]
+WHERE
+[Order Date].[Calendar Year].&[2006]
+
+// [Order Date] - dimension
+// [Calendar Year] - attribute hierarchy
+// &[2006] - member
+
+SELECT [Measures].[Reseller Sales-Sales Amount] ON COLUMNS
+FROM [Analysis Services Tutorial]
+WHERE
+[Order Date].[Calendar Year].&[2006]
+
+SELECT [Measures].[Reseller Sales-Sales Amount] ON 0
+FROM [Analysis Services Tutorial]
+WHERE
+[Order Date].[Calendar Year].&[2006]
+
+// 0 = COLUMNS - always first
+
+SELECT 
+[Measures].[Reseller Sales-Sales Amount] ON COLUMNS,
+[Product].[Product Line].MEMBERS ON ROWS
+FROM [Analysis Services Tutorial]
+WHERE
+[Order Date].[Calendar Year].&[2006]
+
+/* -------------------------------------------------------------------
+Each attrib hierarchy within the dimensions of the cube forms AN AXIS.
+
+Along each axis, each member of attrib hierarchy, including the (All) member, 
+occupies a position.
+
+Measures (dim) are also assigned an axis. Measures attrib hier does not have (All) member.
+
+Points in cube can be referenced using a tuple.
+
+Level 0 
+(All) Level		[All Products]
+-------------------------------------------------------------
+Level 1
+Leaf Level		[Accessories] [Bikes] [Clothing] [Components]
+
+
+<-- All Products -- Accessories -- Bikes -- Clothing -- Components -->
+
+REFERENCING:
+
+[Dimension].[Hierarchy].[Member]
+
+---------------------------------------------------------------------- */
+SELECT
+FROM [Analysis Services Tutorial]
+WHERE
+(
+	[Product].[Product Line].&[R],
+	[Due Date].[Calendar Year].[All],
+	[Due Date].[Fiscal Year].[All],
+	[Measures].[Reseller Sales-Sales Amount]	
+)
+
+/*
+Points in cube space are occupied by cells.
+
+The default cells' properties are:
+- VALUE (aggregated measure value) 
+- FORMATTED_VALUE 
+*/
+
+SELECT
+FROM [Analysis Services Tutorial]
+WHERE
+(
+	[Product].[Product Line].&[R],
+	[Due Date].[Calendar Year].[All],
+	[Due Date].[Fiscal Year].[All],
+	[Measures].[Reseller Sales-Sales Amount]	
+)
+CELL PROPERTIES FORMATTED_VALUE, FORMAT_STRING, VALUE,
+FONT_NAME, FORE_COLOR, BACK_COLOR, ACTION_TYPE
+
+/*
+[Dimension].[Hierarchy].[Member] - can be ambiguous
+
+[Dimension].[Hierarchy].[Level].[Member]
+
+User hierarchies
+
+User user hier to build tuples.
+
+*/
+
+SELECT
+FROM [Analysis Services Tutorial]
+WHERE
+[Due Date].[Calendar Date].[Calendar Year].[CY 2005].[H2 CY 2005].[Q4 CY 2005].[December 2005].&[20051228]
+//[Due Date].[Fiscal Date].[Fiscal Year].&[2006].&[2006]&[1].&[2006]&[2].&[2005]&[December].&[20051228]
+
+SELECT
+FROM [Analysis Services Tutorial]
+WHERE
+(
+	//[Due Date].[Calendar Date].[Calendar Year].[CY 2005].[H2 CY 2005].[Q4 CY 2005].[December 2005].&[20051228]
+	[Due Date].[Fiscal Date].[Fiscal Year].&[2006].&[2006]&[1].&[2006]&[2].&[2005]&[December].&[20051230]
+)
+
+SELECT
+FROM [Analysis Services Tutorial]
+WHERE
+(
+	[Order Date].[Calendar Year].&[2005],
+	[Order Date].[Fiscal Date].[Fiscal Year].&[2006]
+)
+
+/*
+SETS
+
+Set is a collection of tuples.
+
+*/
+
+SELECT
+{
+	( [Order Date].[Calendar Year].[CY 2005],  [Geography].[Geographies].[Country-Region].&[Australia] ),
+	( [Order Date].[Calendar Year].[CY 2006],  [Geography].[Geographies].[Country-Region].&[Germany]   ),
+	( [Order Date].[Calendar Year].[CY 2007],  [Geography].[Geographies].[Country-Region].&[United States] ),
+	( [Order Date].[Calendar Year].[CY 2008],  [Geography].[Geographies].[Country-Region].&[France] )
+	
+} ON COLUMNS,
+{
+	([Product].[Product Line].[Road]),
+	([Product].[Product Line].[Mountain]),
+	([Product].[Product Line].[Accessory]),
+	([Product].[Product Line].[Components]),
+	([Product].[Product Line].[Touring])
+} ON ROWS
+FROM [Analysis Services Tutorial]
+
+// Distinct
+
+SELECT
+{
+	( [Order Date].[Calendar Year].[CY 2008],[Geography].[Geographies].[Country-Region].[United States] )
+	
+} ON COLUMNS,
+DISTINCT(
+	{
+		([Product].[Product Line].[Road]),
+		([Product].[Product Line].[Mountain]),
+		([Product].[Product Line].[Mountain])
+	}
+) ON ROWS
+FROM [Analysis Services Tutorial]
+
+// This:
+
+SELECT
+{
+	([Customer].[Gender].&[F], [Customer].[Marital Status].&[S]),
+	([Customer].[Gender].&[M], [Customer].[Marital Status].&[S])
+} ON 0,
+{
+	([Product].[Product Line].[Road]),
+	([Product].[Product Line].[Mountain])
+} ON 1
+FROM [Analysis Services Tutorial]
+
+// gives same results as:
+
+SELECT
+{
+	([Customer].[Gender].&[F]),
+	([Customer].[Gender].&[M])
+} ON 0,
+{
+	([Product].[Product Line].[Road]),
+	([Product].[Product Line].[Mountain])
+} ON 1
+FROM [Analysis Services Tutorial]
+WHERE
+([Customer].[Marital Status].&[S])
+//([Geography].[Geographies].[Country-Region].[United States])
+
+/*
+Axes:
+
+0..127
+Axis(0) 0	COLUMNS
+Axis(1) 1	ROWS
+			PAGES
+			SECTIONS
+			CHAPTERS
+*/
+
+// Members function
+/*
+hier.Members - returns all members from all levels of hier including (All) member
+hier.level.Members - returns only level members
+
+Members implicitly converts each member into a tuple consisting of 1 member reference (that's why it returns set).
+*/
+
+SELECT
+{
+	([Customer].[Gender].&[F]),
+	([Customer].[Gender].&[M])
+} ON 0,
+{
+	([Product].[Product Line].[Road]),
+	([Product].[Product Line].[Mountain])
+} ON 1
+FROM [Analysis Services Tutorial]
+WHERE
+([Geography].[Geographies].[Country-Region].[United States])
+
+// with members:
+
+SELECT
+{
+	([Customer].[Gender].&[F]),
+	([Customer].[Gender].&[M])
+} ON 0,
+{
+	[Product].[Product Line].Members
+} ON 1
+FROM [Analysis Services Tutorial]
+WHERE
+([Geography].[Geographies].[Country-Region].[United States])
+
+// members on all levels:
+
+SELECT
+{
+	[Customer].[Gender].Members
+} ON 0,
+{
+	[Product].[Product Line].Members
+} ON 1
+FROM [Analysis Services Tutorial]
+WHERE
+([Geography].[Geographies].[Country-Region].[United States])
+
+// MeasureGroupMeasures function:
+
+SELECT 
+{
+	[Customer].[Gender].Members
+} ON 0,
+{
+	MeasureGroupMeasures("Internet Sales")
+} ON 1
+FROM [Analysis Services Tutorial]
+
+// Crossjoin function
+// Crossjoin({Set1}, {Set2}, ...) - (iloczyn kartezjañski zbiorów)
+
+SELECT
+{
+	([Due Date].[Fiscal Date].[Fiscal Year].&[2007]),
+	([Due Date].[Fiscal Date].[Fiscal Year].&[2008])
+} ON 0,
+Crossjoin(
+	{
+		[Product].[Product Model Lines].[Product Line].Members
+	},
+	{
+		([Measures].[Reseller Sales Count]),
+		([Measures].[Reseller Sales-Sales Amount])
+	} 
+)
+ON 1
+FROM [Analysis Services Tutorial]
+
+// cross-join operator: *
+
+SELECT
+{
+	([Due Date].[Fiscal Date].[Fiscal Year].&[2007]),
+	([Due Date].[Fiscal Date].[Fiscal Year].&[2008])
+} ON 0,
+	{
+		[Product].[Product Model Lines].[Product Line].Members
+	}
+*
+	{
+		([Measures].[Reseller Sales Count]),
+		([Measures].[Reseller Sales-Sales Amount])
+	} 
+ON 1
+FROM [Analysis Services Tutorial]
+
+// Limiting sets
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
