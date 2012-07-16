@@ -297,208 +297,119 @@ FROM [Analysis Services Tutorial]
 
 // Limiting sets
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// Perfect cross join (iloczyn kartezjañski):
+
+SELECT 
+{
+	([Due Date].[Calendar Date].[Calendar Year].&[2005]),
+	([Due Date].[Calendar Date].[Calendar Year].&[2006]),
+	([Due Date].[Calendar Date].[Calendar Year].&[2007])
+} *
+{
+	([Measures].[Reseller Sales Count]),
+	([Measures].[Reseller Sales-Sales Amount])
+} 
+ON 0,
+{
+	([Product].[Category].[Category].Members)
+} 
+ON 1
+FROM [Analysis Services Tutorial]
+WHERE 
+([Geography].[Country-Region].&[United States])
+
+// Not perfect cross join between Category and Subcategory:
+// Categories and Subcategories are related (hierarchy)
+
+SELECT 
+{
+	([Due Date].[Calendar Date].[Calendar Year].&[2005]),
+	([Due Date].[Calendar Date].[Calendar Year].&[2006]),
+	([Due Date].[Calendar Date].[Calendar Year].&[2007])
+} *
+{
+	([Measures].[Reseller Sales Count]),
+	([Measures].[Reseller Sales-Sales Amount])
+} 
+ON 0,
+{
+	([Product].[Category].[Category].Members) *
+	([Product].[Subcategory].[Subcategory].Members)
+}
+ON 1
+FROM [Analysis Services Tutorial]
+WHERE 
+([Geography].[Country-Region].&[United States])
+
+// Exists( {Set1}, {Set2} )
+
+SELECT
+{
+	([Order Date].[Calendar Date].[Calendar Year].&[2007]),
+	([Order Date].[Calendar Date].[Calendar Year].&[2010]),
+	([Order Date].[Calendar Date].[Calendar Year].&[2008])
+}
+* 
+{
+	([Measures].[Internet Sales-Sales Amount]),
+	([Measures].[Reseller Sales-Sales Amount])
+}
+ON 0,
+{ [Product].[Category].[Category].Members }
+*
+{ [Product].[Color].[Color].Members }
+ON 1
+FROM [Analysis Services Tutorial]
+WHERE
+([Geography].[Country-Region].&[United States],
+[Product].[Product Categories].[Subcategory].[Mountain Bikes])
+
+--
+
+SELECT
+{
+	([Order Date].[Calendar Date].[Calendar Year].&[2007]),
+	([Order Date].[Calendar Date].[Calendar Year].&[2010]),
+	([Order Date].[Calendar Date].[Calendar Year].&[2008])
+}
+* 
+{
+	([Measures].[Internet Sales-Sales Amount]),
+	([Measures].[Reseller Sales-Sales Amount])
+}
+ON 0,
+Exists
+(
+	{ [Product].[Category].[Category].Members} * {[Product].[Color].[Color].Members },
+	{ [Product].[Product Categories].[Subcategory].[Mountain Bikes] }
+)
+ON 1
+FROM [Analysis Services Tutorial]
+WHERE
+([Geography].[Country-Region].&[United States])
+
+
+// NON EMPTY
+// A lot of nulls:
+SELECT
+{
+	[Measures].[Reseller Sales-Sales Amount]
+} ON 0,
+{ [Due Date].[Month Name].&[2008]&[June] } *
+{[Employee].[Employee Name].Members}
+ON 1
+FROM [Analysis Services Tutorial]
+
+SELECT
+{
+	[Measures].[Reseller Sales-Sales Amount]
+} ON 0,
+NON EMPTY { [Due Date].[Month Name].&[2008]&[June] } *
+{[Employee].[Employee Name].Members}
+ON 1
+FROM [Analysis Services Tutorial]
+
+// Working with expressions
 
 
 
