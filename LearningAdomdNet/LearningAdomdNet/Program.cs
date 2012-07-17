@@ -12,7 +12,7 @@ namespace LearningAdomdNet
 {
     class Program 
     {
-        // Reding some cube properties
+        // Reading some cube properties
 
         static void Main()
         {
