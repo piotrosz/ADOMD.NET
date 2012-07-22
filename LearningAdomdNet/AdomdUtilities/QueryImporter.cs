@@ -9,20 +9,17 @@ namespace AdomdUtilities
 {
     public class QueryImporter
     {
+        private string fileContents;
+
         public QueryImporter(string filename)
         {
-            Filename = filename;
+            this.fileContents = File.ReadAllText(filename);
         }
-
-        public string Filename { get; set; }
 
         public string FromFile(string queryKey)
         {
-            string allText = File.ReadAllText(Filename);
-
-            Regex r = new Regex(@"//<" + queryKey + @">([^@]*)[/|\-]{2}</" + queryKey + ">");
-            Match match;
-            match = r.Match(allText);
+            Regex regex = new Regex(@"[/|\-]{2}<" + queryKey + @">([^@]*)[/|\-]{2}</" + queryKey + @">");
+            Match match = regex.Match(fileContents);
 
             return match.Success ? match.Groups[1].ToString() : "";
         }

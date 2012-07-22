@@ -17,21 +17,18 @@ namespace AdomdExecuteCommands
 			// Import MDX query from file
 			var query = new QueryImporter("../../../../LearningMDX.mdx");
 
-			string mdxQuery = query.FromFile("Query1");
+			string mdxQuery1 = query.FromFile("Query2");
 
 			using (AdomdConnection conn = new AdomdConnection(connectionString))
 			{
 				conn.Open();
 
-				AdomdCommand command = conn.CreateCommand();
+				using (AdomdCommand command = conn.CreateCommand())
+				{
+					command.CommandText = mdxQuery1;
 
-				command.CommandText = mdxQuery;
-
-				CellSet cellSet = command.ExecuteCellSet();
-
-                //CellSetConverter cellSetConverter = new CellSetConverter(cellSet);
-
-                //DataTable dataTable = cellSetConverter.ToDataTable();
+					CellSet cellSet1 = command.ExecuteCellSet();
+				}
 			}
 		}
 	}

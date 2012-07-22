@@ -279,6 +279,7 @@ FROM [Analysis Services Tutorial]
 
 // cross-join operator: *
 
+//<Query2>
 SELECT
 {
 	([Due Date].[Fiscal Date].[Fiscal Year].&[2007]),
@@ -289,11 +290,30 @@ SELECT
 	}
 *
 	{
-		([Measures].[Reseller Sales Count]),
+		([Measures].[Reseller Sales Count])
+		//,([Measures].[Reseller Sales-Sales Amount])
+	} 
+DIMENSION PROPERTIES MEMBER_KEY, Key0 ON 1
+FROM [Analysis Services Tutorial]
+//</Query2>
+
+//<Query3>
+SELECT
+{
+	([Due Date].[Fiscal Date].[Fiscal Year].&[2007]),
+	([Due Date].[Fiscal Date].[Fiscal Year].&[2008])
+} ON 0,
+NON EMPTY
+	{
+		[Product].[Product Model Lines].[Product Line].Members
+	}
+*
+	{
 		([Measures].[Reseller Sales-Sales Amount])
 	} 
-ON 1
+DIMENSION PROPERTIES MEMBER_KEY, Key0 ON 1
 FROM [Analysis Services Tutorial]
+//</Query3>
 
 // Limiting sets
 
@@ -385,8 +405,8 @@ Exists
 )
 ON 1
 FROM [Analysis Services Tutorial]
-WHERE
-([Geography].[Country-Region].&[United States])
+--WHERE
+--([Customer].[Location].[Country-Region].&[United States])
 
 
 // NON EMPTY
@@ -404,14 +424,86 @@ FROM [Analysis Services Tutorial]
 SELECT
 {
 	[Measures].[Reseller Sales-Sales Amount]
-} ON 0,
+} DIMENSION PROPERTIES [MEMBER_KEY], Key0 ON 0,
 NON EMPTY { [Due Date].[Month Name].&[2008]&[June] } *
 {[Employee].[Employee Name].Members}
-ON 1
+DIMENSION PROPERTIES [MEMBER_KEY], Key0 ON 1
 FROM [Analysis Services Tutorial]
 //</Query1>
 
 // Working with expressions
+
+// - Except, Set
+// IS
+// : Range, Set
+// + Union, Set (removes duplicates)
+
+// Calculated members
+
+SELECT
+{
+	([Date].[Calendar Date].[Calendar Year].&[2008]),
+	([Date].[Calendar Date].[Calendar Year].&[2007])
+} ON 0,
+{
+	([Product].[Category].[Accessories]),
+	([Product].[Category].[Bikes]),
+	([Product].[Category].[Clothing]),
+	([Product].[Category].[Components])
+} ON 1
+FROM [Analysis Services Tutorial]
+
+WITH
+MEMBER [Product].[Category].[All Products].[X] AS 1 + 1
+SELECT
+{
+	([Date].[Calendar Date].[Calendar Year].&[2008]),
+	([Date].[Calendar Date].[Calendar Year].&[2007])
+} ON 0,
+{
+	([Product].[Category].[Accessories]),
+	([Product].[Category].[Bikes]),
+	([Product].[Category].[Clothing]),
+	([Product].[Category].[Components])
+} ON 1
+FROM [Analysis Services Tutorial]
+
+WITH
+MEMBER [Product].[Category].[All Products].[X] AS 1 + 1
+SELECT
+{
+	([Date].[Calendar Date].[Calendar Year].&[2008]),
+	([Date].[Calendar Date].[Calendar Year].&[2007])
+} ON 0,
+{
+	([Product].[Category].[Accessories]),
+	([Product].[Category].[Bikes]),
+	([Product].[Category].[Clothing]),
+	([Product].[Category].[Components]),
+	([Product].[Category].[X])
+} ON 1
+FROM [Analysis Services Tutorial]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
