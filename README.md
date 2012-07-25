@@ -1,5 +1,5 @@
 ADOMD.NET
 =========
 
-ADOMD.NET Examples
+Useless ADOMD.NET Examples
 
