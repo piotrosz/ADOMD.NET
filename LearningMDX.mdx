@@ -484,13 +484,161 @@ SELECT
 } ON 1
 FROM [Analysis Services Tutorial]
 
+// AllMembers
+
+WITH
+MEMBER [Product].[Category].[All Products].[X] AS 1 + 1
+SELECT
+{
+	([Date].[Calendar Date].[Calendar Year].&[2008]),
+	([Date].[Calendar Date].[Calendar Year].&[2007])
+} ON 0,
+{
+	[Product].[Category].AllMembers
+} ON 1
+FROM [Analysis Services Tutorial]
+
+// Dynamic
+
+WITH
+MEMBER [Product].[Category].[All Products].[Bikes And Accessories] 
+	AS ([Product].[Category].[Bikes]) + ([Product].[Category].[Accessories])
+SELECT
+{
+	([Date].[Calendar Date].[Calendar Year].&[2008]),
+	([Date].[Calendar Date].[Calendar Year].&[2007])
+} ON 0,
+{
+	[Product].[Category].AllMembers
+} ON 1
+FROM [Analysis Services Tutorial]
 
 
+WITH
+MEMBER [Product].[Category].[All Products].[Percent Bikes] AS
+	([Product].[Category].[Bikes] / [Product].[Category].[All Products]), FORMAT_STRING="Percent"
+SELECT
+{
+	([Measures].[Internet Sales-Sales Amount]),
+	([Measures].[Reseller Sales-Sales Amount])
+}
+ON 0,
+{
+	[Product].[Category].AllMembers
+}
+ON 1
+FROM [Analysis Services Tutorial]
+	
+// SOLVE_ORDER	
+
+WITH
+MEMBER [Measures].[Combined Sales Amount] AS 
+		(([Measures].[Internet Sales-Sales Amount]) + ([Measures].[Reseller Sales-Sales Amount])), SOLVE_ORDER=1
+				
+MEMBER [Product].[Category].[All Products].[Percent Bikes] AS
+	    ([Product].[Category].[Bikes] / [Product].[Category].[All Products]), FORMAT_STRING="Percent",SOLVE_ORDER=2
+SELECT
+{
+	[Measures].[Internet Sales-Sales Amount],
+	[Measures].[Reseller Sales-Sales Amount],
+	[Measures].[Combined Sales Amount]
+} ON 0,
+{
+	[Product].[Category].AllMembers
+} ON 1	
+FROM [Analysis Services Tutorial]
+
+------------------------------------------------------------------------------------------------------------------
+
+// [Dimension].[Hierarchy].CurrentMember
+
+//IIF = inline IF
+//IIF(logical expression, expression1, expression2)
+
+WITH 
+MEMBER [Measures].[Parent Name] AS
+	[Product].[Product Categories].CurrentMember.Parent.Name
+SELECT
+{[Measures].[Parent Name]} ON 0,
+{[Product].[Product Categories].AllMembers} ON 1
+FROM [Analysis Services Tutorial]
+
+WITH
+MEMBER [Measures].[Parent Name] AS
+	IIF(
+		[Product].[Product Categories].CurrentMember.Properties("LEVEL_NUMBER", TYPED) = 0,
+		"N/A",
+		[Product].[Product Categories].CurrentMember.Parent.UniqueName
+	)
+SELECT
+{[Measures].[Parent Name]} ON 0,
+{[Product].[Product Categories].AllMembers} ON 1
+FROM [Analysis Services Tutorial]
+
+WITH
+MEMBER [Measures].[Parent Name] AS
+	IIF(
+		[Product].[Product Categories].CurrentMember.Properties("LEVEL_NUMBER", TYPED) = 0,
+		"N/A",
+		[Product].[Product Categories].CurrentMember.Parent.UniqueName
+	)
+MEMBER [Measures].[Percent Parent] AS
+	([Measures].[Reseller Sales-Sales Amount]) /
+		([Product].[Product Categories].CurrentMember.Parent, [Measures].[Reseller Sales-Sales Amount]), FORMAT_STRING="Percent"
+
+SELECT
+{
+	[Measures].[Parent Name],
+	[Measures].[Reseller Sales-Sales Amount],
+	[Measures].[Percent Parent]
+} ON 0,
+{[Product].[Product Categories].AllMembers} ON 1
+FROM [Analysis Services Tutorial]
+
+WITH
+MEMBER [Measures].[Parent Name] AS
+	IIF(
+		[Product].[Product Categories].CurrentMember.Properties("LEVEL_NUMBER", TYPED) = 0,
+		"N/A",
+		[Product].[Product Categories].CurrentMember.Parent.UniqueName
+	)
+MEMBER [Measures].[Percent Parent] AS
+	IIF(
+		[Product].[Product Categories].CurrentMember.Properties("LEVEL_NUMBER", TYPED) = 0,
+		"N/A",
+		([Measures].[Reseller Sales-Sales Amount]) /
+			([Product].[Product Categories].CurrentMember.Parent, [Measures].[Reseller Sales-Sales Amount])
+	)
+	, FORMAT_STRING="Percent"
+SELECT
+{
+	[Measures].[Parent Name],
+	[Measures].[Reseller Sales-Sales Amount],
+	[Measures].[Percent Parent]
+} ON 0,
+{[Product].[Product Categories].AllMembers} ON 1
+FROM [Analysis Services Tutorial]
+
+// ----------------------
+// Special member functions
+// [Dimension].[Hierarchy].DefaultMember - All, first
+// [Dimension].[Hierarchy].UnknownMember - Null,  error
+// [Dimension].[Hierarchy].DataMember 
 
 
+// EXISTING - restrict per current context
 
-
-
+WITH
+MEMBER [Measures].[Products Count] 
+AS
+Count(EXISTING [Product].[Model Name].[Model Name].Members)
+SELECT 
+{
+	[Measures].[Reseller Sales-Sales Amount],
+	[Measures].[Products Count]
+} ON 0,
+{ [Product].[Category].[Category].Members } ON 1
+FROM [Analysis Services Tutorial]
 
 
 
