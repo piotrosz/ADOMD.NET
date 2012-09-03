@@ -1,0 +1,183 @@
+/*
+* Order
+*/
+
+SELECT
+{([Measures].[Total Sales Amount])}
+ON 0,
+{([Product].[Category].[Category].Members)}
+ON 1
+FROM [Analysis Services Tutorial]
+
+SELECT
+{([Measures].[Total Sales Amount])}
+ON 0,
+
+Order(
+	{([Product].[Category].[Category].Members)},
+	([Measures].[Total Sales Amount]),
+	DESC
+)
+ON 1
+FROM [Analysis Services Tutorial]
+
+SELECT
+{[Measures].[Total Sales Amount], 
+[Measures].[Reseller Sales-Sales Amount], 
+[Measures].[Internet Sales-Sales Amount]}
+ON 0,
+
+Order(
+	{([Product].[Category].[Category].Members)},
+	VBAMDX!ABS(
+		[Measures].[Reseller Sales-Sales Amount] -
+		[Measures].[Internet Sales-Sales Amount]
+	),
+	DESC
+)
+ON 1
+FROM [Analysis Services Tutorial]
+
+/*
+* Order - break hierarchy (DESC -> BDESC)
+*/
+
+SELECT
+[Measures].[Internet Sales-Sales Amount]
+ON 0,
+Order(
+	{[Product].[Category].[Category].Members} *
+	{[Product].[Subcategory].[Subcategory].Members},
+	[Measures].[Internet Sales-Sales Amount],	
+	DESC
+)
+ON 1
+FROM [Analysis Services Tutorial]
+
+SELECT
+[Measures].[Internet Sales-Sales Amount]
+ON 0,
+Order(
+	{[Product].[Category].[Category].Members} *
+	{[Product].[Subcategory].[Subcategory].Members},
+	[Measures].[Internet Sales-Sales Amount],	
+	BDESC
+)
+ON 1
+FROM [Analysis Services Tutorial]
+
+/*
+* Hierarchize
+*/
+
+SELECT
+[Measures].[Internet Sales-Sales Amount]
+ON 0,
+Hierarchize(
+	{
+		[Product].[Product Categories].[All Products],
+		[Product].[Product Categories].[Subcategory].[Shorts],
+		[Product].[Product Categories].[Category].[Clothing],
+		[Product].[Product Categories].[Subcategory].[Caps]
+	},
+	POST /* optional order */
+)
+ON 1
+FROM [Analysis Services Tutorial]
+
+/*
+* Range operator :
+*/
+
+SELECT
+[Measures].[Internet Sales-Sales Amount]
+ON 0,
+{[Date].[Calendar Date].[Calendar Year].&[2005]:[Date].[Calendar Date].[Calendar Year].&[2010]}
+ON 1
+FROM [Analysis Services Tutorial]
+
+/*
+* TopCount, BottomCount
+*/
+
+SELECT
+[Measures].[Total Sales Amount]
+ON 0,
+/*TopCount(*/ BottomCount(
+	[Product].[Subcategory].[Subcategory].Members,
+	5,
+	[Measures].[Total Sales Amount]	
+)
+ON 1
+FROM [Analysis Services Tutorial]
+
+/*
+* Head, Tail
+* They do not sort the tuples
+*/
+
+SELECT
+[Measures].[Total Sales Amount]
+ON 0,
+Head(
+	Order(
+		[Product].[Subcategory].[Subcategory].Members,
+		[Measures].[Total Sales Amount],
+		BDESC	
+	),
+3
+)
+ON 1
+FROM [Analysis Services Tutorial]
+
+/*
+* Item
+* Can be used against sets and tuples
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
