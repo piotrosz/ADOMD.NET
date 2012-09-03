@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="CellProperties.cs" />
     <Compile Include="MdxStringExtensions.cs" />
+    <Compile Include="QueryBuilder.cs" />
     <Compile Include="QueryImporter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
